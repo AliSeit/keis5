@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Путешествия пользователей</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFF8E1;
+            margin: 0;
+            padding: 20px;
+            color: #5D4037;
+        }
+        
+        h1, h2 {
+            color: #D32F2F;
+            text-align: center;
+            border-bottom: 2px solid #FFC107;
+            padding-bottom: 10px;
+        }
+        
+        #travelForm {
+            background-color: #FFEBEE;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 20px auto;
+            border: 1px solid #FFCDD2;
+        }
+        
+        #travelForm input, #travelForm select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #FFC107;
+            border-radius: 4px;
+            background-color: #FFFDE7;
+        }
+        
+        #travelForm button {
+            background-color: #D32F2F;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        
+        #travelForm button:hover {
+            background-color: #B71C1C;
+        }
+        
+        #travelList, #otherTravels {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .travel-card {
+            background-color: #FFECB3;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 5px solid #D32F2F;
+            font-weight: bold;
+        }
+        
+        .travel-card img {
+            border-radius: 4px;
+            margin-top: 10px;
+            border: 2px solid #FFC107;
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        
+        .travel-rating {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        
+        .rating-item {
+            text-align: center;
+        }
+        
+        .rating-value {
+            color: #D32F2F;
+            font-weight: bold;
+        }
+        
+        .country-filter {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .country-filter button {
+            background-color: #FFC107;
+            color: #5D4037;
+            border: none;
+            padding: 8px 16px;
+            margin: 0 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .country-filter button:hover {
+            background-color: #FFA000;
+        }
+        
+        .country-filter button.active {
+            background-color: #D32F2F;
+            color: white;
+        }
+        
+        ::placeholder {
+            color: #E53935;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <h1>Мои Путешествия</h1>
+    <form id="travelForm">
+        <input type="text" id="location" placeholder="Местоположение" required>
+        <input type="text" id="images" placeholder="Ссылка на изображения (через запятую)" required>
+        <input type="number" id="cost" placeholder="Стоимость путешествия" required>
+        <input type="number" id="convenience" placeholder="Удобство передвижения (1-10)" required min="1" max="10">
+        <input type="number" id="safety" placeholder="Уровень безопасности (1-10)" required min="1" max="10">
+        <input type="number" id="populationDensity" placeholder="Населённость (1-10)" required min="1" max="10">
+        
+        <button type="submit">Добавить путешествие</button>
+    </form>
+
+    <h2>Мои сохранённые путешествия</h2>
+    <div id="travelList"></div>
+
+    <h2>Путешествия других пользователей</h2>
+    <div class="country-filter">
+        <button onclick="filterTravels('all')" class="active">Все</button>
+        <button onclick="filterTravels('china')">Китай</button>
+        <button onclick="filterTravels('japan')">Япония</button>
+    </div>
+    <div id="otherTravels"></div>
+
+    <script>
+        // Примеры путешествий других пользователей
+        const otherUsersTravels = {
+            china: [
+                {
+                    location: "Пекин, Китай",
+                    images: ["https://news-img.gismeteo.st/ru/2024/11/shutterstock_1115269154-640x427.jpg", "https://example.com/beijing2.jpg"],
+                    cost: 50000,
+                    convenienceRating: 8,
+                    safetyRating: 7,
+                    populationDensityRating: 9,
+                    
+                    username: "Алексей"
+                },
+                {
+                    location: "Шанхай, Китай",
+                    images: ["https://i.pinimg.com/736x/22/95/66/229566f25405c50aa2233083ae4d354c.jpg", "https://example.com/shanghai2.jpg"],
+                    cost: 65000,
+                    convenienceRating: 9,
+                    safetyRating: 8,
+                    populationDensityRating: 9,
+                   
+                    username: "Мария"
+                }
+            ],
+            japan: [
+                {
+                    location: "Токио, Япония",
+                    images: ["https://i.pinimg.com/originals/3d/f1/f7/3df1f7d425461c18a5afe5e05810e596.jpg", "https://example.com/tokyo2.jpg"],
+                    cost: 80000,
+                    convenienceRating: 10,
+                    safetyRating: 10,
+                    populationDensityRating: 8,
+                    
+                    username: "Иван"
+                },
+                {
+                    location: "Киото, Япония",
+                    images: ["https://i.pinimg.com/736x/9d/b9/4d/9db94d356321e7f37ce5bb48e2e1dbd4.jpg", "https://example.com/kyoto2.jpg"],
+                    cost: 75000,
+                    convenienceRating: 9,
+                    safetyRating: 9,
+                    populationDensityRating: 6,
+                    
+                    username: "Елена"
+                }
+            ]
+        };
+
+        // Сохранение путешествия в localStorage
+        document.getElementById('travelForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const travelData = {
+                location: document.getElementById('location').value,
+                images: document.getElementById('images').value.split(',').map(img => img.trim()),
+                cost: document.getElementById('cost').value,
+                convenienceRating: document.getElementById('convenience').value,
+                safetyRating: document.getElementById('safety').value,
+                populationDensityRating: document.getElementById('populationDensity').value,
+                
+                date: new Date().toISOString()
+            };
+
+            // Получаем текущие путешествия из localStorage
+            let myTravels = JSON.parse(localStorage.getItem('myTravels')) || [];
+            
+            // Добавляем новое путешествие
+            myTravels.push(travelData);
+            
+            // Сохраняем обратно в localStorage
+            localStorage.setItem('myTravels', JSON.stringify(myTravels));
+            
+            // Обновляем список
+            loadMyTravels();
+            
+            // Очищаем форму
+            document.getElementById('travelForm').reset();
+            
+            alert('Путешествие успешно сохранено!');
+        });
+
+        // Загрузка моих путешествий из localStorage
+        function loadMyTravels() {
+            const myTravels = JSON.parse(localStorage.getItem('myTravels')) || [];
+            const travelList = document.getElementById('travelList');
+            travelList.innerHTML = '';
+            
+            if (myTravels.length === 0) {
+                travelList.innerHTML = '<p>У вас пока нет сохранённых путешествий</p>';
+                return;
+            }
+            
+            myTravels.forEach(travel => {
+                travelList.innerHTML += createTravelCard(travel);
+            });
+        }
+
+        // Загрузка путешествий других пользователей
+        function loadOtherTravels(filter = 'all') {
+            const otherTravels = document.getElementById('otherTravels');
+            otherTravels.innerHTML = '';
+            
+            if (filter === 'all') {
+                Object.values(otherUsersTravels).flat().forEach(travel => {
+                    otherTravels.innerHTML += createTravelCard(travel, true);
+                });
+            } else if (filter === 'china') {
+                otherUsersTravels.china.forEach(travel => {
+                    otherTravels.innerHTML += createTravelCard(travel, true);
+                });
+            } else if (filter === 'japan') {
+                otherUsersTravels.japan.forEach(travel => {
+                    otherTravels.innerHTML += createTravelCard(travel, true);
+                });
+            }
+        }
+
+        // Фильтрация путешествий по стране
+        function filterTravels(country) {
+            // Обновляем активную кнопку
+            document.querySelectorAll('.country-filter button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Загружаем отфильтрованные путешествия
+            loadOtherTravels(country);
+        }
+
+        // Создание карточки путешествия
+        function createTravelCard(travel, isOtherUser = false) {
+            return `
+                <div class="travel-card">
+                    <h3>${travel.location}</h3>
+                    ${isOtherUser ? `<p>Автор: ${travel.username}</p>` : ''}
+                    <img src="${travel.images[0]}" alt="${travel.location}">
+                    <p>Стоимость: ${travel.cost}₽</p>
+                    <div class="travel-rating">
+                        <div class="rating-item">
+                            <span>Удобство</span>
+                            <div class="rating-value">${travel.convenienceRating}/10</div>
+                        </div>
+                        <div class="rating-item">
+                            <span>Безопасность</span>
+                            <div class="rating-value">${travel.safetyRating}/10</div>
+                        </div>
+                        <div class="rating-item">
+                            <span>Населённость</span>
+                            <div class="rating-value">${travel.populationDensityRating}/10</div>
+                        </div>
+                        <div class="rating-item">
+                            
+                            
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Инициализация при загрузке страницы
+        window.onload = function() {
+            loadMyTravels();
+            loadOtherTravels();
+        };
+    </script>
+</body>
+</html>
